@@ -10,12 +10,13 @@ import os
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 import json
 import getpass
+import platform
 
 keyboard = Controller()
 mouse = MouseController()
 sct = mss()
 
-server_address = "http://localhost:3000"
+
 
 def click_left():
     mouse.press(Button.left)
@@ -67,12 +68,23 @@ def initialize():
         data = json.load(f)
         server_address = data["server"]["address"]
         return server_address
+server_address = initialize()
 def main(argv):
     #initialize()
     server_address = initialize()
     sio.connect(server_address)
-    sio.emit("update_name", {
-        "name": getpass.getuser()
+    print(platform.platform())
+    _uname = os.uname()
+    print(_uname.sysname)
+    sio.emit("post_connection", {
+        "name": getpass.getuser(),
+        "os": {
+            "system_name": _uname.sysname,
+            "nodename": _uname.nodename,
+            "version": _uname.version,
+            "machine": _uname.machine,
+            "release": _uname.release
+        }
     })
     opts, args = getopt.getopt(argv, "c:p:t:s", ["click=", "type=", "position-cursor=", "screenshot"])
     for opt, arg in opts:
