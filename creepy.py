@@ -8,11 +8,13 @@ from mss import mss
 import requests
 import os
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+import json
 
 keyboard = Controller()
 mouse = MouseController()
 sct = mss()
 
+server_address = "http://localhost:3000"
 
 def click_left():
     mouse.press(Button.left)
@@ -59,9 +61,13 @@ def handle_mouse_click(data):
         time.sleep(data["timeout"])
         upload_image(takeSS(_from=[True, data["from"]]), _from=data["from"])
 
-
+def initialize():
+    with open('config.json') as f:
+        data = json.load(f)
+        server_address = data["server"]["address"]
 def main(argv):
-    sio.connect("http://localhost:3000")
+    initialize()
+    sio.connect(server_address)
     opts, args = getopt.getopt(argv, "c:p:t:s", ["click=", "type=", "position-cursor=", "screenshot"])
     for opt, arg in opts:
         if opt == "TESTING":
@@ -94,7 +100,7 @@ def takeSS(_from = [False, ""]):
     return nfilename    
 def upload_image(src, _from=""):
         img = open(src, 'rb')
-        url = "http://localhost:3000/ss"
+        url = server_address + "/ss"
         
         mp_encoder = MultipartEncoder(
             fields={
