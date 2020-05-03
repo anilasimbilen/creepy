@@ -9,6 +9,7 @@ import requests
 import os
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 import json
+import getpass
 
 keyboard = Controller()
 mouse = MouseController()
@@ -65,9 +66,14 @@ def initialize():
     with open('config.json') as f:
         data = json.load(f)
         server_address = data["server"]["address"]
+        return server_address
 def main(argv):
-    initialize()
+    #initialize()
+    server_address = initialize()
     sio.connect(server_address)
+    sio.emit("update_name", {
+        "name": getpass.getuser()
+    })
     opts, args = getopt.getopt(argv, "c:p:t:s", ["click=", "type=", "position-cursor=", "screenshot"])
     for opt, arg in opts:
         if opt == "TESTING":
