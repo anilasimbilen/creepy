@@ -11,7 +11,7 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 import json
 import getpass
 import platform
-
+import pyautogui
 keyboard = Controller()
 mouse = MouseController()
 sct = mss()
@@ -74,18 +74,39 @@ def main(argv):
     server_address = initialize()
     sio.connect(server_address)
     print(platform.platform())
-    _uname = os.uname()
-    print(_uname.sysname)
-    sio.emit("post_connection", {
-        "name": getpass.getuser(),
-        "os": {
-            "system_name": _uname.sysname,
-            "nodename": _uname.nodename,
-            "version": _uname.version,
-            "machine": _uname.machine,
-            "release": _uname.release
-        }
-    })
+    _uname = ""
+    screen_size = pyautogui.size()
+    screen_size = str(screen_size[0]) + "x" + str(screen_size[1])
+    try:
+        _uname = os.uname()
+        print(_uname.sysname)
+        sio.emit("post_connection", {
+            "name": getpass.getuser(),
+            "os": {
+                "system_name": _uname.sysname,
+                "nodename": _uname.nodename,
+                "version": _uname.version,
+                "machine": _uname.machine,
+                "release": _uname.release,
+                "processor": "NON_SPECIFIED",
+                "screen_size": screen_size 
+            }
+        })
+    except:
+        _uname = platform.uname()
+        sio.emit("post_connection", {
+            "name": getpass.getuser(),
+            "os": {
+                "system_name": _uname.system,
+                "nodename": _uname.node,
+                "version": _uname.version,
+                "machine": _uname.machine,
+                "release": _uname.release,
+                "processor": _uname.processor,
+                "screen_size": screen_size 
+            }
+        })
+        print(_uname)
     opts, args = getopt.getopt(argv, "c:p:t:s", ["click=", "type=", "position-cursor=", "screenshot"])
     for opt, arg in opts:
         if opt == "TESTING":
